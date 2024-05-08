@@ -5,6 +5,7 @@ import (
 	"log"
 	"math"
 	"net/http"
+	"net/url"
 	"sort"
 	"time"
 
@@ -41,7 +42,11 @@ func ResponseTimeChart(c *fiber.Ctx) error {
 	default:
 		return c.Status(400).SendString("Durations supported: 7d, 24h")
 	}
-	hourlyAverageResponseTime, err := store.Get().GetHourlyAverageResponseTimeByKey(c.Params("key"), from, time.Now())
+	key := c.Params("key")
+	if v, err := url.PathUnescape(key); err == nil {
+		key = v
+	}
+	hourlyAverageResponseTime, err := store.Get().GetHourlyAverageResponseTimeByKey(key, from, time.Now())
 	if err != nil {
 		if errors.Is(err, common.ErrEndpointNotFound) {
 			return c.Status(404).SendString(err.Error())

@@ -3,6 +3,7 @@ package api
 import (
 	"errors"
 	"log"
+	"net/url"
 	"strings"
 	"time"
 
@@ -31,6 +32,9 @@ func CreateExternalEndpointResult(cfg *config.Config) fiber.Handler {
 			return c.Status(401).SendString("bearer token must not be empty")
 		}
 		key := c.Params("key")
+		if v, err := url.PathUnescape(key); err == nil {
+			key = v
+		}
 		externalEndpoint := cfg.GetExternalEndpointByKey(key)
 		if externalEndpoint == nil {
 			log.Printf("[api.CreateExternalEndpointResult] External endpoint with key=%s not found", key)
